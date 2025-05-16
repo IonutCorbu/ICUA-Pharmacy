@@ -53,7 +53,6 @@ public class LoginActivity extends AppCompatActivity {
             if (cursor != null && cursor.moveToFirst()) {
                 String storedPassword = cursor.getString(cursor.getColumnIndexOrThrow("password"));
                 if (password.equals(storedPassword)) {
-                    // Store sensitive user data in SharedPref
                     String credentials = username + ":" + password;
                     SharedPreferences prefs = getSharedPreferences("my_app_prefs", MODE_PRIVATE);
                     SharedPreferences.Editor editor = prefs.edit();

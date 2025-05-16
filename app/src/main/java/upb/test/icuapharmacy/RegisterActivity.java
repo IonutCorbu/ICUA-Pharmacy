@@ -53,7 +53,6 @@ public class RegisterActivity extends AppCompatActivity {
 
             long newRowId = db.insert("user", null, values);
             if (newRowId != -1) {
-                // Logging credentials after user register
                 Log.v("LoginActivity", "User " + username + " logged in successfully");
 
                 Toast.makeText(this, "User registered successfully", Toast.LENGTH_SHORT).show();

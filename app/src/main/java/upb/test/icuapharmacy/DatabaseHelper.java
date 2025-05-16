@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -57,10 +56,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void insertReview(int userId, int productId, int grade, String reviewText) {
         SQLiteDatabase db = this.getWritableDatabase();
         try {
-            String fileName = "review_" + System.currentTimeMillis() + ".txt";
+            String productName = null;
+            Cursor cursor = db.rawQuery("SELECT name FROM products WHERE id = ?", new String[]{String.valueOf(productId)});
+            if (cursor.moveToFirst()) {
+                productName = cursor.getString(cursor.getColumnIndexOrThrow("name"));
+            }
+            cursor.close();
+
+            if (productName == null) {
+                productName = "unknown_product";
+            }
+
+
+            String sanitizedProductName = productName.toLowerCase().replaceAll("[^a-z0-9]", "_");
+
+            String fileName = "review_" + sanitizedProductName + ".txt";
+
+            String contentToSave = "Product: " + productName + "\n\n" + reviewText;
+
             File file = new File(context.getFilesDir(), fileName);
             FileOutputStream fos = new FileOutputStream(file);
-            fos.write(reviewText.getBytes());
+            fos.write(contentToSave.getBytes());
             fos.close();
 
             ContentValues values = new ContentValues();
@@ -75,8 +91,28 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+
+    public ArrayList<String> getReviewPathsForUser(int userId) {
+        ArrayList<String> paths = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT review_path FROM review WHERE id_user = ?";
+        Cursor cursor = db.rawQuery(query, new String[] { String.valueOf(userId) });
+
+        if (cursor.moveToFirst()) {
+            do {
+                String path = cursor.getString(cursor.getColumnIndexOrThrow("review_path"));
+                paths.add(path);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+
+        return paths;
+    }
+
     public ArrayList<Product> getAllProducts() {
-        ArrayList<Product> products = new ArrayList<Product>();
+        ArrayList<Product> products = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
 
         String query = "SELECT id, name, price, imageUrl FROM products";
@@ -84,15 +120,77 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         if (cursor.moveToFirst()) {
             do {
+                int id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
                 String name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
                 double price = cursor.getDouble(cursor.getColumnIndexOrThrow("price"));
                 String imageUrl = cursor.getString(cursor.getColumnIndexOrThrow("imageUrl"));
 
-                products.add(new Product(name, price, imageUrl));
+                products.add(new Product(id, name, price, imageUrl));
             } while (cursor.moveToNext());
         }
         cursor.close();
         db.close();
         return products;
+    }
+
+    public boolean hasUserReviewedProduct(int userId, String productName) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(
+                "SELECT r.id FROM review r JOIN products p ON r.id_product = p.id WHERE r.id_user = ? AND p.name = ?",
+                new String[]{String.valueOf(userId), productName}
+        );
+        boolean exists = cursor.moveToFirst();
+        cursor.close();
+        return exists;
+    }
+
+    public void addProduct(String name, double price, String imageUrl) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("name", name);
+        values.put("price", price);
+        values.put("imageUrl", imageUrl);
+        db.insert("products", null, values);
+        db.close();
+    }
+
+    public int getUserIdByUsername(String username) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT id FROM user WHERE username = ?", new String[]{username});
+        int userId = -1;
+        if (cursor.moveToFirst()) {
+            userId = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+        }
+        cursor.close();
+        return userId;
+    }
+
+
+    public ReviewInfo getReviewInfoByFilename(int userId, String filename) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        ReviewInfo reviewInfo = null;
+
+        String query = "SELECT p.name, r.grade FROM review r " +
+                "JOIN products p ON r.id_product = p.id " +
+                "WHERE r.id_user = ? AND r.review_path LIKE ?";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(userId), "%" + filename});
+
+        if (cursor.moveToFirst()) {
+            String productName = cursor.getString(0);
+            int grade = cursor.getInt(1);
+            reviewInfo = new ReviewInfo(productName, grade);
+        }
+        cursor.close();
+        return reviewInfo;
+    }
+
+    public static class ReviewInfo {
+        public final String productName;
+        public final int grade;
+
+        public ReviewInfo(String productName, int grade) {
+            this.productName = productName;
+            this.grade = grade;
+        }
     }
 }

@@ -51,11 +51,12 @@ public class AdminDashboardActivity extends AppCompatActivity {
 
         if (cursor.moveToFirst()) {
             do {
+                int id = cursor.getInt(0);
                 String name = cursor.getString(1);
                 double price = cursor.getDouble(2);
                 String imageUrl = cursor.getString(3);
 
-                Product product = new Product(name, price, imageUrl);
+                Product product = new Product(id, name, price, imageUrl);
                 products.add(product);
             } while (cursor.moveToNext());
         }
