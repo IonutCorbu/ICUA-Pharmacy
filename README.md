@@ -9,27 +9,33 @@ This Android application supports user registration, user login, admin login, an
 - **RegisterActivity**  
   Allows new users to create accounts.  
   **Vulnerabilities:**  
-  - Credentials are logged in plaintext (risk of sensitive data exposure via logs).  
+  - Credentials are logged in plaintext (risk of sensitive data exposure via logs).
 
 - **LoginActivity**  
   Allows existing users to log in.  
   **Vulnerabilities:**  
-  - Credentials are stored in SharedPreferences without encryption (risk of credential theft).  
+  - Credentials are stored in SharedPreferences without encryption (risk of credential theft).
 
 - **AdminLoginActivity**  
   Special login for admins.  
   **Vulnerabilities:**  
-  - Admin credentials are hardcoded in the app (easy to extract and misuse).  
+  - Admin credentials are hardcoded in the app (easy to extract and misuse).
 
 - **AdminDashboardActivity**  
   Displays the list of products for admins.  
   **Vulnerabilities:**  
-  - **Not exported** — protected from unauthorized external access.  
+  - **Not exported** — protected from unauthorized external access.
 
 - **AddProductActivity**  
   Form for adding new products (admin only).  
   **Vulnerabilities:**  
-  - Exported, accessible without authentication, enabling unauthorized product additions.  
+  - Exported, accessible without authentication, enabling unauthorized product additions.
+
+- **DisplayReviewActivity**  
+  Shows user review content by filename input.  
+  **Vulnerabilities:**  
+  - Executes shell command `cat <filename>` directly using user input without sanitization, leading to **command injection vulnerability**.  
+  - An attacker can craft malicious input to execute arbitrary commands on the device.
 
 ---
 
@@ -42,10 +48,11 @@ This Android application supports user registration, user login, admin login, an
 - AdminLoginActivity  
 - AdminDashboardActivity  
 - AddProductActivity  
+- DisplayReviewActivity
 
 ### 2. Database
 
-- SQLite with `users` and `products` tables.
+- SQLite with `user`, `products`, and `review` tables.
 
 ### 3. UI
 
@@ -56,4 +63,3 @@ This Android application supports user registration, user login, admin login, an
 - Glide for image loading.
 
 ---
-
