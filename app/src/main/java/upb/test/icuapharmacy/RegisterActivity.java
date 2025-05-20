@@ -3,6 +3,7 @@ package upb.test.icuapharmacy;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -47,13 +48,21 @@ public class RegisterActivity extends AppCompatActivity {
             }
 
             SQLiteDatabase db = dbHelper.getWritableDatabase();
+            Cursor cursor = db.query("user",null,"username=?",new String[]{username},null,null,null);
+            if(cursor.getCount()!=0)
+            {
+                Toast.makeText(RegisterActivity.this,"Username already existing",Toast.LENGTH_SHORT).show();
+                cursor.close();
+                return;
+            }
+            cursor.close();
             ContentValues values = new ContentValues();
             values.put("username", username);
             values.put("password", password);
 
             long newRowId = db.insert("user", null, values);
             if (newRowId != -1) {
-                Log.v("LoginActivity", "User " + username + " logged in successfully");
+                Log.v("RegisterActivity", "User " + username + " logged in successfully");
 
                 Toast.makeText(this, "User registered successfully", Toast.LENGTH_SHORT).show();
                 editTextUsername.setText("");
@@ -61,7 +70,6 @@ public class RegisterActivity extends AppCompatActivity {
                 editConfirmPassword.setText("");
                 Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
                 startActivity(intent);
-                finish();
             } else {
                 Toast.makeText(this, "Registration failed", Toast.LENGTH_SHORT).show();
             }

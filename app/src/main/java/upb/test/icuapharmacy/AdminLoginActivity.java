@@ -39,7 +39,6 @@ public class AdminLoginActivity extends AppCompatActivity {
                 Toast.makeText(this, "Admin login successful", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(AdminLoginActivity.this, AdminDashboardActivity.class);
                 startActivity(intent);
-                finish();
             } else {
                 Toast.makeText(this, "Invalid admin credentials", Toast.LENGTH_SHORT).show();
             }
