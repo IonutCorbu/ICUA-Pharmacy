@@ -22,11 +22,6 @@ This Android application supports user registration, user login, admin login, an
   **Vulnerabilities:**  
   - Admin credentials are hardcoded in the app (easy to extract and misuse).
 
-- **AdminDashboardActivity**  
-  Displays the list of products for admins.  
-  **Vulnerabilities:**  
-  - **Not exported** — protected from unauthorized external access.
-
 - **AddProductActivity**  
   Form for adding new products (admin only).  
   **Vulnerabilities:**  
