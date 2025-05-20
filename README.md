@@ -6,6 +6,7 @@ This Android application supports user registration, user login, admin login, an
 
 ### Activities & Vulnerabilities
 
+
 - **RegisterActivity**  
   Allows new users to create accounts.  
   **Vulnerabilities:**  
@@ -36,6 +37,9 @@ This Android application supports user registration, user login, admin login, an
   **Vulnerabilities:**  
   - Executes shell command `cat <filename>` directly using user input without sanitization, leading to **command injection vulnerability**.  
   - An attacker can craft malicious input to execute arbitrary commands on the device.
+
+- **Database**
+  - Stores unhashed passwords which could imply a leak of users' passwords.
 
 ---
 
